@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.0;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
 
 import "../contracts/interfaces/IDiamondCut.sol";
 import "../contracts/facets/DiamondCutFacet.sol";
@@ -47,7 +47,7 @@ contract DiamondDeployer is Test, IDiamondCut {
         IDiamondCut(address(diamond)).diamondCut(cut, address(0x0), "");
 
         nft = ERC721Facet(address(diamond));
-        nft.init("MyNFT", "MNFT");
+        nft.init("Diamond NFT", "DNFT");
     }
 
     function testDeployDiamond() public  {

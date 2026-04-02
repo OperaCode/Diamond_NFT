@@ -1,12 +1,10 @@
-// contracts/facets/ERC721Facet.sol
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
 import "../storage/AppStorage.sol";
-import { IERC721, IERC721Receiver } from "../interfaces/IERC721.sol";
-
+import {IERC721, IERC721Receiver} from "../interfaces/IERC721.sol";
 
 contract ERC721Facet is IERC721 {
-
     // Diamond Storage Access
     function _s() internal pure returns (AppStorage storage s) {
         assembly {
@@ -14,11 +12,23 @@ contract ERC721Facet is IERC721 {
         }
     }
 
-    // ── events ─────────────────────────────────────────
+    // events
 
-    event Transfer(address indexed from, address indexed to, uint256 indexed tokenId);
-    event Approval(address indexed owner, address indexed approved, uint256 indexed tokenId);
-    event ApprovalForAll(address indexed owner, address indexed operator, bool approved);
+    event Transfer(
+        address indexed from,
+        address indexed to,
+        uint256 indexed tokenId
+    );
+    event Approval(
+        address indexed owner,
+        address indexed approved,
+        uint256 indexed tokenId
+    );
+    event ApprovalForAll(
+        address indexed owner,
+        address indexed operator,
+        bool approved
+    );
 
     // ── init ───────────────────────────────────────────
 
@@ -31,7 +41,7 @@ contract ERC721Facet is IERC721 {
         s.initialized = true;
     }
 
-    // ── metadata ───────────────────────────────────────
+    // metadata
 
     function name() external view returns (string memory) {
         return _s().name;
@@ -41,8 +51,7 @@ contract ERC721Facet is IERC721 {
         return _s().symbol;
     }
 
-    // ── core ───────────────────────────────────────────
-
+    // core
     function balanceOf(address owner) external view returns (uint256) {
         require(owner != address(0), "Zero address");
         return _s().balances[owner];
@@ -59,9 +68,7 @@ contract ERC721Facet is IERC721 {
         return _s().tokenApprovals[tokenId];
     }
 
-   
-
-    // ── approvals ──────────────────────────────────────
+    // approvals
 
     function approve(address to, uint256 tokenId) external {
         AppStorage storage s = _s();
@@ -77,9 +84,7 @@ contract ERC721Facet is IERC721 {
         emit Approval(owner, to, tokenId);
     }
 
-    
-
-    // ── transfer ───────────────────────────────────────
+    // transfer
 
     function transferFrom(address from, address to, uint256 tokenId) public {
         AppStorage storage s = _s();
@@ -89,8 +94,8 @@ contract ERC721Facet is IERC721 {
         require(to != address(0), "Zero address");
         require(
             msg.sender == owner ||
-            s.operatorApprovals[owner][msg.sender] ||
-            s.tokenApprovals[tokenId] == msg.sender,
+                s.operatorApprovals[owner][msg.sender] ||
+                s.tokenApprovals[tokenId] == msg.sender,
             "Not authorized"
         );
 
@@ -103,8 +108,7 @@ contract ERC721Facet is IERC721 {
         emit Transfer(from, to, tokenId);
     }
 
-
-    // ── mint / burn ───────────────────────────────────
+    // mint / burn functions
 
     function mint(address to, uint256 tokenId) external {
         AppStorage storage s = _s();
@@ -125,8 +129,8 @@ contract ERC721Facet is IERC721 {
 
         require(
             msg.sender == owner ||
-            s.operatorApprovals[owner][msg.sender] ||
-            s.tokenApprovals[tokenId] == msg.sender,
+                s.operatorApprovals[owner][msg.sender] ||
+                s.tokenApprovals[tokenId] == msg.sender,
             "Not authorized"
         );
 
@@ -138,5 +142,4 @@ contract ERC721Facet is IERC721 {
 
         emit Transfer(owner, address(0), tokenId);
     }
-
 }
