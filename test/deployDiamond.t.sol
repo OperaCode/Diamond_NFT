@@ -5,49 +5,86 @@ import "../contracts/interfaces/IDiamondCut.sol";
 import "../contracts/facets/DiamondCutFacet.sol";
 import "../contracts/facets/DiamondLoupeFacet.sol";
 import "../contracts/facets/OwnershipFacet.sol";
+import "../contracts/facets/ERC721Facet.sol";
 import "forge-std/Test.sol";
 import "../contracts/Diamond.sol";
 
 contract DiamondDeployer is Test, IDiamondCut {
-    //contract types of facets to be deployed
     Diamond diamond;
     DiamondCutFacet dCutFacet;
     DiamondLoupeFacet dLoupe;
     OwnershipFacet ownerF;
+    ERC721Facet erc721Facet;
+    ERC721Facet nft;          
 
-    function testDeployDiamond() public {
-        //deploy facets
-        dCutFacet = new DiamondCutFacet();
-        diamond = new Diamond(address(this), address(dCutFacet));
-        dLoupe = new DiamondLoupeFacet();
-        ownerF = new OwnershipFacet();
+    function setUp() public {
+        dCutFacet   = new DiamondCutFacet();
+        diamond     = new Diamond(address(this), address(dCutFacet));
+        dLoupe      = new DiamondLoupeFacet();
+        ownerF      = new OwnershipFacet();
+        erc721Facet = new ERC721Facet();
 
-        //upgrade diamond with facets
+        FacetCut[] memory cut = new FacetCut[](3);
 
-        //build cut struct
-        FacetCut[] memory cut = new FacetCut[](2);
+        cut[0] = FacetCut({
+            facetAddress: address(dLoupe),
+            action: FacetCutAction.Add,
+            functionSelectors: generateSelectors("DiamondLoupeFacet")
+        });
 
-        cut[0] = (
-            FacetCut({
-                facetAddress: address(dLoupe),
-                action: FacetCutAction.Add,
-                functionSelectors: generateSelectors("DiamondLoupeFacet")
-            })
-        );
+        cut[1] = FacetCut({
+            facetAddress: address(ownerF),
+            action: FacetCutAction.Add,
+            functionSelectors: generateSelectors("OwnershipFacet")
+        });
 
-        cut[1] = (
-            FacetCut({
-                facetAddress: address(ownerF),
-                action: FacetCutAction.Add,
-                functionSelectors: generateSelectors("OwnershipFacet")
-            })
-        );
+        cut[2] = FacetCut({
+            facetAddress: address(erc721Facet),
+            action: FacetCutAction.Add,
+            functionSelectors: generateSelectors("ERC721Facet")
+        });
 
-        //upgrade diamond
         IDiamondCut(address(diamond)).diamondCut(cut, address(0x0), "");
 
-        //call a function
-        DiamondLoupeFacet(address(diamond)).facetAddresses();
+        nft = ERC721Facet(address(diamond));
+        nft.init("MyNFT", "MNFT");
+    }
+
+    function testDeployDiamond() public  {
+        address[] memory facets = DiamondLoupeFacet(address(diamond)).facetAddresses();
+        assertEq(facets.length, 4);
+        assertEq(nft.name(),   "MyNFT");
+        assertEq(nft.symbol(), "MNFT");
+    }
+
+    function testMintWorks() public {
+        nft.mint(address(1), 1);
+
+        assertEq(nft.ownerOf(1),            address(1));
+        assertEq(nft.balanceOf(address(1)), 1);
+    }
+
+    function testTransferWorks() public {
+        nft.mint(address(1), 1);
+
+        vm.prank(address(1));
+        nft.transferFrom(address(1), address(2), 1);
+
+        assertEq(nft.ownerOf(1),            address(2));
+        assertEq(nft.balanceOf(address(2)), 1);
+        assertEq(nft.balanceOf(address(1)), 0);
+    }
+
+    function testApproveAndTransfer() public {
+        nft.mint(address(1), 2);
+
+        vm.prank(address(1));
+        nft.approve(address(2), 2);
+
+        vm.prank(address(2));
+        nft.transferFrom(address(1), address(2), 2);
+
+        assertEq(nft.ownerOf(2), address(2));
     }
 
     function generateSelectors(
