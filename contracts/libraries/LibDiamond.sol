@@ -253,9 +253,8 @@ library LibDiamond {
             ds.facetFunctionSelectors[_facetAddress].functionSelectors[
                     selectorPosition
                 ] = lastSelector;
-            ds
-                .selectorToFacetAndPosition[lastSelector]
-                .functionSelectorPosition = uint96(selectorPosition);
+            // casting to 'uint96' is safe because the number of selectors in a facet is small
+            ds.selectorToFacetAndPosition[lastSelector].functionSelectorPosition = uint96(selectorPosition); // forge-lint: disable-line(unsafe-typecast)
         }
         // delete the last selector
         ds.facetFunctionSelectors[_facetAddress].functionSelectors.pop();

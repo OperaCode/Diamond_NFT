@@ -1,15 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "../storage/AppStorage.sol";
-import {IERC721, IERC721Receiver} from "../interfaces/IERC721.sol";
+import {LibAppStorage, AppStorage} from "../libraries/LibAppStorage.sol";
+import {IERC721} from "../interfaces/IERC721.sol";
 
 contract ERC721Facet is IERC721 {
     // Diamond Storage Access
-    function _s() internal pure returns (AppStorage storage s) {
-        assembly {
-            s.slot := 0
-        }
+    function _s() internal pure returns (AppStorage storage ds) {
+        return LibAppStorage.appStorage();
     }
 
     // events

@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "../contracts/interfaces/IDiamondCut.sol";
-import "../contracts/facets/DiamondCutFacet.sol";
-import "../contracts/facets/DiamondLoupeFacet.sol";
-import "../contracts/facets/OwnershipFacet.sol";
-import "../contracts/facets/ERC721Facet.sol";
-import "forge-std/Test.sol";
-import "../contracts/Diamond.sol";
+import {IDiamondCut} from "../contracts/interfaces/IDiamondCut.sol";
+import {DiamondCutFacet} from "../contracts/facets/DiamondCutFacet.sol";
+import {DiamondLoupeFacet} from "../contracts/facets/DiamondLoupeFacet.sol";
+import {OwnershipFacet} from "../contracts/facets/OwnershipFacet.sol";
+import {ERC721Facet} from "../contracts/facets/ERC721Facet.sol";
+import {Test} from "forge-std/Test.sol";
+import {Diamond} from "../contracts/Diamond.sol";
 
 contract DiamondDeployer is Test, IDiamondCut {
     Diamond diamond;
@@ -53,8 +53,8 @@ contract DiamondDeployer is Test, IDiamondCut {
     function testDeployDiamond() public  {
         address[] memory facets = DiamondLoupeFacet(address(diamond)).facetAddresses();
         assertEq(facets.length, 4);
-        assertEq(nft.name(),   "MyNFT");
-        assertEq(nft.symbol(), "MNFT");
+        assertEq(nft.name(),   "Diamond NFT");
+        assertEq(nft.symbol(), "DNFT");
     }
 
     function testMintWorks() public {
